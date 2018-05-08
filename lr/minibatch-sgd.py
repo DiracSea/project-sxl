@@ -1,8 +1,12 @@
 import csv
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 #A is row vector
 #X is column vector
+#sparse training set
+#shuffle data set
+#consider 0 data
 class minibatch_sgd(object):
     def __init__(self,rate):
         self.rate
@@ -41,10 +45,19 @@ def regular(X,y):
     tmp = np.ones(np.shape(X))*X_min
     X_tmp = X-tmp
     y_max = max(y)
-    y_min = min(y)
-    for i in range(0,len(X)):
-        X[i] = X_tmp[i]/(X_max - X_min)
-        y[i] = (y[i] - y_min)/(y_max - y_min)
+    y_min = min(y) 
+    if X_max != 0 and y_max != 0:
+        for i in range(0,len(X)):
+            X[i] = X_tmp[i]/(X_max - X_min)
+            y[i] = (y[i] - y_min)/(y_max - y_min)
+    elif X_max == 0 and y_max != 0:
+        for i in range(0,len(X)):
+            y[i] = (y[i] - y_min)/(y_max - y_min)
+    elif y_max == 0:
+        for i in range(0,len(X)):
+            X[i] = X_tmp[i]/(X_max - X_min)
+    else:
+        pass
     return [X,y]
 
 def shuffle_index(inputs):
@@ -52,7 +65,7 @@ def shuffle_index(inputs):
     np.randpm.shuffle(indices)
     return indices
 
-def iter_batch(X,y,batchsize,shuffle=False):
+def iter_batch(X,y,batchsize,shuffle=False):#每次随机抽batchsize个样本
     if shuffle:
         indices = shuffle_index(X)
     for start_idx in range(0,inputs.shape[0]-batchsize+1,batchsize):
@@ -63,7 +76,7 @@ def iter_batch(X,y,batchsize,shuffle=False):
         yield X[excerpt], y[excerpt]
 
 
-def f_train(A,b,step,bacth=200):
+def f_learn(A,b,step,bacth=200):
     all_loss = []
     all_step = []
     last_a = A
@@ -99,17 +112,53 @@ def f_train(A,b,step,bacth=200):
             print("step: ", step, " loss: ", loss)
             plt.show()
 
-def loss_plot():
+def norm():
     pass
 
-def f_val():
-    pass
+def train(X,y,A,b,all_loss,all_step):
+    loss = 0
+    all_dA = np.zeros(np.shape(A))
+    all_db = 0
 
-def run(X,y,Xt,yt,epochs,batchsize):
+    for i in xrange(0,len(X)):
+        y_p = A*X[i] + b
+        loss = loss + (y[i] - y_p)*(y[i] - y_p)/2
+        all_dA = all_dA + dA(y[i],y_p,X[i])
+        all_db = all_db + db(y[i],y_p)
+    
+    loss = loss/len(X)
+
+    all_loss.append(loss)
+    all_step.append(step)
+    plt.plot(all_step,all_loss,color='blue')
+
+    A = A - rate*all_dA
+    b = b - rate*all_db
+    return A, b, loss, all_loss, all_step
+
+def validate(Xt,yt,A,b):
+    loss = 0
+    for i in xrange(0,len(Xt)):
+        yt_p = A*Xt[i] + b
+        loss = loss + (yt[i] - yt_p)*(yt[i] - yt_p)/2
+    loss = loss/len(Xt)
+    return loss
+
+
+
+def run(X,y,Xt,yt,A,b,epochs,batchsize=200):
+    plt.figure()
     for n in xrange(epochs):
+        all_loss = []
+        all_step = []
         for batch in iter_batch(X,y,batchsize,shuffle=True):
             X_batch, y_batch = batch
-            l_train, acc_train = f_train(x_batch, y_batch)
+            l_train,A,b,all_loss,all_step = train(X_batch, y_batch,A,b,all_loss,all_step)
 
-        l_val, acc_val = f_val(Xt, Yt)
-        logging.info('epoch ' + str(n) + ' ,train_loss ' + str(l_train) + ' ,acc ' + str(acc_train) + ' ,val_loss ' + str(l_val) + ' ,acc ' + str(acc_val))
+        l_val = validate(Xt, Yt, A, b)
+        logging.info('epoch ' + str(n) + ' ,train_loss ' + str(l_train) + ' ,val_loss ' + str(l_val)
+    plt.xlabel("step")
+    plt.ylabel("loss")
+    plt.show()
+    plt.close('all') 
+    return A, b, l_train, l_val
