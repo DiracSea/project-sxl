@@ -7,15 +7,12 @@ import matplotlib.pyplot as plt
 #sparse training set
 #shuffle data set
 #consider 0 data
-class minibatch_sgd(object):
-    def __init__(self,rate):
-        self.rate
-
+'''
 rate = 0.2
 A=[]
 b=20
 X #global X is array
-
+'''
 
 def dA(y,y_p,X):#negative partial A/gradA, A is vector
     return (y-y_p)*(-X.T)
@@ -39,6 +36,11 @@ def shuffle_data(X,y):#randomize X and y,testing
     y = np.array(y)
     return [X,y]
 
+def shuffle_index(inputs):
+    indices = np.arange(inputs.shape[0])
+    np.randpm.shuffle(indices)
+    return indices
+
 def regular(X,y):
     X_max = X_array.max()
     X_min = X_array.min()
@@ -60,10 +62,6 @@ def regular(X,y):
         pass
     return [X,y]
 
-def shuffle_index(inputs):
-    indices = np.arange(inputs.shape[0])
-    np.randpm.shuffle(indices)
-    return indices
 
 def iter_batch(X,y,batchsize,shuffle=False):#每次随机抽batchsize个样本
     if shuffle:
@@ -75,47 +73,10 @@ def iter_batch(X,y,batchsize,shuffle=False):#每次随机抽batchsize个样本
             excerpt = slice(start_idx,start_idx+batchsize)
         yield X[excerpt], y[excerpt]
 
-
-def f_learn(A,b,step,bacth=200):
-    all_loss = []
-    all_step = []
-    last_a = A
-    last_b = b
-
-    for step in range(1,step):
-        loss = 0
-        all_dA = np.zeros(np.shape(A))
-        all_db = 0
-        [X,y] = shuffle_data(X,y)
-
-
-
-        for i in range(0,len(X_new)):
-            y_p = A*X_new[i] + b
-            loss = loss + (y_new[i] - y_p)*(y_new[i] - y_p)/2
-            all_dA = all_dA + dA(y_new[i],y_p,X_new[i])
-            all_db = all_db + db(y_new[i],y_p)
-        loss = loss/len(X_new)
-        #fig loss
-        all_loss.append(loss)
-        all_step.append(step)
-        plt.plot(all_step,all_loss,color='orange')
-        plt.xlabel("step")
-        plt.ylabel("loss")
-
-        last_a = A
-        last_b = b
-        A = A - rate*all_dA
-        b = b - rate*all_db
-
-        if step%1 == 0:
-            print("step: ", step, " loss: ", loss)
-            plt.show()
-
 def norm():
     pass
 
-def train(X,y,A,b,all_loss,all_step):
+def train(X,y,A,b,all_loss,all_step,rate):
     loss = 0
     all_dA = np.zeros(np.shape(A))
     all_db = 0
@@ -145,7 +106,6 @@ def validate(Xt,yt,A,b):
     return loss
 
 
-
 def run(X,y,Xt,yt,A,b,epochs,batchsize=200):
     plt.figure()
     for n in xrange(epochs):
@@ -153,10 +113,10 @@ def run(X,y,Xt,yt,A,b,epochs,batchsize=200):
         all_step = []
         for batch in iter_batch(X,y,batchsize,shuffle=True):
             X_batch, y_batch = batch
-            l_train,A,b,all_loss,all_step = train(X_batch, y_batch,A,b,all_loss,all_step)
+            l_train,A,b,all_loss,all_step = train(X_batch, y_batch,A,b,all_loss,all_step,rate)
 
         l_val = validate(Xt, Yt, A, b)
-        logging.info('epoch ' + str(n) + ' ,train_loss ' + str(l_train) + ' ,val_loss ' + str(l_val)
+        logging.info('epoch:' + str(n) + ' ,train_loss:' + str(l_train) + ' ,val_loss:' + str(l_val)
     plt.xlabel("step")
     plt.ylabel("loss")
     plt.show()
