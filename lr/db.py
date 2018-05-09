@@ -1,6 +1,7 @@
 import MySQLdb
 #import MySQLdb.cursors as cursors
 
+#Parent
 class conn_db(object):
     def __init__(self,host,port,user,psw,db,table):
         self.host = '120.39.63.241'
@@ -12,14 +13,14 @@ class conn_db(object):
 
     def export(self):
         try:
-            conn = MySQLdb.connect(host = host,port = port,user = user,password = psw,db = db)
+            conn = MySQLdb.connect(host = self.host,port = self.port,user = self.user,password = self.psw,db = self.db)
             cursor = conn.cursor()
-            cursor.execute('select * from '+table)
+            cursor.execute('select * from '+self.table)
 
             while 1:
-                row = cursor.fetchone()
+                row = cursor.fetchone()#use fetchone but not fetchall
                 if row:
-                    yield row
+                    yield row #generate a generator
                 else:
                     break
 
@@ -31,32 +32,20 @@ class conn_db(object):
         #l=list(zip(*values))#tuple2zip2list
         #return l
 
+'''
+#Subclass 1
 class conn_rainfall(conn_db):
-    def __init__(self,host,port,user,psw,db,table,inverval):
+    def __init__(self,host,port,user,psw,db,table):
         super(conn_rainfall,self).__init__(host,port,user,psw,db,table)
         self.db = 'rainfall'
-        self.interval = interval
     def export(self):
         super(conn_rainfall,self).export()
-        conn = MySQLdb.connect(host = host,port = port,user = user,password = psw,db = db)
-        cursor = conn.cursor()
-        values = cursor.execute('select * from')
 
-        values = cursor.fetchall()#value is a tuple type:(str,str,datatime.datetime,int,int)
-        l=list(zip(*values))#tuple2zip2list
-
-        cursor.close();conn.close()
-
+#Subclass 2
 class conn_device(conn_db):
     def __init__(self,host,port,user,psw,db,table):
         super(conn_rainfall,self).__init__(host,port,user,psw,db,table)
         self.db = 'device_monitor'
-    def export(self,table):
-        conn = MySQLdb.connect(host = host,port = port,user = user,password = psw,db = db)
-        cursor = conn.cursor()
-        values = cursor.execute('')
-
-        values = cursor.fetchall()#value is a tuple type:(str,str,datatime.datetime,int,int)
-        l=list(zip(*values))#tuple2zip2list
-
-        cursor.close();conn.close()
+    def export(self):
+        super(conn_device,self).export()
+'''

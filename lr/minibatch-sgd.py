@@ -3,7 +3,8 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 #A is row vector
-#X is column vector
+#X is column vector, rainfall
+#y is water
 #sparse training set
 #shuffle data set
 #consider 0 data
@@ -63,7 +64,7 @@ def regular(X,y):
     return [X,y]
 
 
-def iter_batch(X,y,batchsize,shuffle=False):#每次随机抽batchsize个样本
+def iter_batch(X,y,batchsize,shuffle=False):#randomly choose batchsize's samples
     if shuffle:
         indices = shuffle_index(X)
     for start_idx in range(0,inputs.shape[0]-batchsize+1,batchsize):
