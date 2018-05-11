@@ -3,7 +3,7 @@ import MySQLdb
 
 #Parent
 class conn_db(object):
-    def __init__(self,host,port,user,psw,db,table):
+    def __init__(self,db,table,host,port,user,psw):
         self.host = '120.39.63.241'
         self.port = 3306
         self.user = 'root'
