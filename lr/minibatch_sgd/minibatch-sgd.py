@@ -2,6 +2,7 @@ import csv
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+from data_process.slice_data import slice_rand,slice_all
 #A is row vector
 #X is column vector, rainfall
 #y is water
@@ -27,9 +28,6 @@ def loss_func(A,b,X,y):#loss function
     SSE = sum(tmp) / (2*len(X))
     return SSE#sum of square error
 
-def shuffle_single(X):
-    random.random()
-    random.shuffle(X)
 
 def shuffle_data(X,y):#randomize X and y,testing
     seed = random.random()
@@ -45,7 +43,7 @@ def shuffle_index(inputs):
     indices = np.arange(inputs.shape[0])
     np.randpm.shuffle(indices)
     return indices
-
+'''
 def regular(X,y):
     X_max = X_array.max()
     X_min = X_array.min()
@@ -54,14 +52,14 @@ def regular(X,y):
     y_max = max(y)
     y_min = min(y) 
     if X_max != 0 and y_max != 0:
-        for i in range(0,len(X)):
+        for i in range(len(X)):
             X[i] = X_tmp[i]/(X_max - X_min)
             y[i] = (y[i] - y_min)/(y_max - y_min)
     elif X_max == 0 and y_max != 0:
-        for i in range(0,len(X)):
+        for i in range(len(X)):
             y[i] = (y[i] - y_min)/(y_max - y_min)
     elif y_max == 0:
-        for i in range(0,len(X)):
+        for i in range(len(X)):
             X[i] = X_tmp[i]/(X_max - X_min)
     else:
         pass
@@ -80,13 +78,13 @@ def iter_batch(X,y,batchsize,shuffle=False):#randomly choose batchsize's samples
 
 def norm():
     pass
-
+'''
 def train(X,y,A,b,all_loss,all_step,rate):
     loss = 0
     all_dA = np.zeros(np.shape(A))
     all_db = 0
 
-    for i in xrange(0,len(X)):
+    for i in range(len(X)):
         y_p = A*X[i] + b
         loss = loss + (y[i] - y_p)*(y[i] - y_p)/2
         all_dA = all_dA + dA(y[i],y_p,X[i])
@@ -102,28 +100,57 @@ def train(X,y,A,b,all_loss,all_step,rate):
     b = b - rate*all_db
     return A, b, loss, all_loss, all_step
 
-def validate(Xt,yt,A,b):
+def validate(Xv,yv,A,b):
     loss = 0
-    for i in xrange(0,len(Xt)):
-        yt_p = A*Xt[i] + b
-        loss = loss + (yt[i] - yt_p)*(yt[i] - yt_p)/2
-    loss = loss/len(Xt)
+    length = 0
+    for X1,y1 in zip(Xv,yv):
+        for Xt,yt in zip(X1,y1):
+            yt_p = A*Xt[i] + b
+            loss = loss + (yt[i] - yt_p)*(yt[i] - yt_p)/2
+            length+=1
+    loss = loss/length
     return loss
 
 
-def run(X,y,Xt,yt,A,b,epochs,batchsize=200):
+def run(A,b,batchsize=200,table,condition,rate):
     plt.figure()
-    for n in xrange(epochs):
-        all_loss = []
-        all_step = []
-        for batch in iter_batch(X,y,batchsize,shuffle=True):
-            X_batch, y_batch = batch
-            l_train,A,b,all_loss,all_step = train(X_batch, y_batch,A,b,all_loss,all_step,rate)
+    epochs = 0
+    Xv = []; yv = []
+    all_loss = []
+    all_step = []
+    for X,y,Xt,yt in slice_rand(batchsize,table,condition):
+        Xv.append(Xt); yv.append(yt);epochs+=1
+        l_train,A,b,all_loss,all_step = train(X, y,A,b,all_loss,all_step,rate)
 
-        l_val = validate(Xt, Yt, A, b)
-        logging.info('epoch:' + str(n) + ' ,train_loss:' + str(l_train) + ' ,val_loss:' + str(l_val)
+    l_val = validate(Xv, yv, A, b)
+    logging.info('epoch:' + str(n) + ' ,train_loss:' + str(l_train) + ' ,val_loss:' + str(l_val)
     plt.xlabel("step")
     plt.ylabel("loss")
     plt.show()
     plt.close('all') 
     return A, b, l_train, l_val
+
+def run_all(A,b,table,condition,rate):
+    plt.figure()
+    epochs = 0
+    Xv = [];yv = []
+    all_loss = []
+    all_step = []
+    for data,label in slice_all(table):
+        if label == 'train':
+            epochs+=1
+            X = data[]####
+            y = data[-1]
+            l_train,A,b,all_loss,all_step = train(X, y,A,b,all_loss,all_step,rate)
+
+        elif label == 'valid':
+            Xv.append(data[])####
+            yv.append(data[-1])
+    l_val = validate(Xv, yv, A, b)
+    logging.info('epoch:' + str(n) + ' ,train_loss:' + str(l_train) + ' ,val_loss:' + str(l_val)
+    plt.xlabel("step")
+    plt.ylabel("loss")
+    plt.show()
+    plt.close('all') 
+    return A, b, l_train, l_val
+
