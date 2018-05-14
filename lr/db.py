@@ -1,13 +1,12 @@
 import MySQLdb
 #import MySQLdb.cursors as cursors
 
-#Parent
 class conn_db(object):
     def __init__(self,db,table,host,port,user,psw):
-        self.host = '120.39.63.241'
-        self.port = 3306
-        self.user = 'root'
-        self.psw = 'sxl!123456'
+        self.host = host
+        self.port = port
+        self.user = user
+        self.psw = psw
         self.db = db
         self.table = table
 
@@ -31,6 +30,46 @@ class conn_db(object):
         #values = cursor.fetchall()#value is a tuple type:(str,str,datatime.datetime,int,int)
         #l=list(zip(*values))#tuple2zip2list
         #return l
+#1
+class conn_rand(conn_db):#yield row
+    def __init__(self,db,table,host,port,user,psw):
+        super(conn_db,self).__init__(db,table,host,port,user,psw)
+        
+    def export(self):
+        super(conn_db,self).export()
+#2
+class conn_block(conn_db):#yield block
+    def __init__(self,db,table,host,port,user,psw):
+        super(conn_single_block,self).__init__(db,table,host,port,user,psw)
+
+    def export(self):
+        try:
+            conn = MySQLdb.connect(host = self.host,port = self.port,user = self.user,password = self.psw,db = self.db)
+            cursor = conn.cursor()
+            cursor.execute('select * from '+self.table)
+            flag1 = 1
+            label = 1
+            row = ()
+            while flag1:
+                block = []
+                flag2 = 1
+                block.append(row)
+                while flag2:
+                    row = cursor.fetchone()#use fetchone but not fetchall
+                    if row:
+                        if label != row[0]:
+                            flag2 = 0
+                            label = row[0]
+                            yield block#generate block generator
+                        else:
+                            block.append(row)
+                    else:
+                        flag1 = 0
+                
+        except ProgrammingError:
+            print "Tried to read a cursor after it was already closed"
+        finally:
+            cursor.close();conn.close()
 
 '''
 #Subclass 1

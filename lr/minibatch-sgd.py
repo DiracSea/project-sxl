@@ -27,6 +27,10 @@ def loss_func(A,b,X,y):#loss function
     SSE = sum(tmp) / (2*len(X))
     return SSE#sum of square error
 
+def shuffle_single(X):
+    random.random()
+    random.shuffle(X)
+
 def shuffle_data(X,y):#randomize X and y,testing
     seed = random.random()
     random.seed(seed)
