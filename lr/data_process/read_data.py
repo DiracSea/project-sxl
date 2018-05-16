@@ -9,7 +9,7 @@ def split_num(batchsize):
     return train_num, valid_num
 
 def read_rand_data(batchsize,table):#yield batch  
-    rand = conn_rand()###
+    rand = conn_rand('dataBlock',table,'112.74.45.185',3306,'root','opal123456!@#')###
     counter = 0
     size = 0
     train_num, valid_num = split_num(batchsize)
@@ -31,12 +31,12 @@ def read_rand_data(batchsize,table):#yield batch
             yield T,V
 
 def del_label(table):
-    block = conn_block()###
+    block = conn_block('dataBlock',table,'112.74.45.185',3306,'root','opal123456!@#')###
     for b in block.export():
         A = np.delete(b, 0, 1)
         yield A
 
-def read_single_block(batchsize,table):
+def read_single_block(blank,table):
     for block in del_label(table):
         block = np.array(block)
         batchsize = len(block)

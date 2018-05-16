@@ -17,17 +17,17 @@ X #global X is array
 '''
 
 def dA(y,y_p,X):#negative partial A/gradA, A is vector
-    return (y-y_p)*(-X.T)
+    return (y-y_p)*(-X)
 
 def db(y,y_p):#negative partial b/gradb
     return (y-y_p)*(-1)
-
+'''
 def loss_func(A,b,X,y):#loss function
-    tmp = y - (A*X + b)
+    tmp = y - (np.dot(A,X) + b)
     tmp = tmp**2
     SSE = sum(tmp) / (2*len(X))
     return SSE#sum of square error
-
+'''
 
 def shuffle_data(X,y):#randomize X and y,testing
     seed = random.random()
@@ -43,7 +43,7 @@ def shuffle_index(inputs):
     indices = np.arange(inputs.shape[0])
     np.randpm.shuffle(indices)
     return indices
-'''
+''' 
 def regular(X,y):
     X_max = X_array.max()
     X_min = X_array.min()
@@ -85,7 +85,7 @@ def train(X,y,A,b,all_loss,all_step,rate):
     all_db = 0
 
     for i in range(len(X)):
-        y_p = A*X[i] + b
+        y_p = np.dot(A,X[i]) + b
         loss = loss + (y[i] - y_p)*(y[i] - y_p)/2
         all_dA = all_dA + dA(y[i],y_p,X[i])
         all_db = all_db + db(y[i],y_p)
@@ -105,20 +105,26 @@ def validate(Xv,yv,A,b):
     length = 0
     for X1,y1 in zip(Xv,yv):
         for Xt,yt in zip(X1,y1):
-            yt_p = A*Xt[i] + b
+            yt_p = np.dot(A,Xt[i]) + b
             loss = loss + (yt[i] - yt_p)*(yt[i] - yt_p)/2
             length+=1
     loss = loss/length
     return loss
 
 
-def run(A,b,batchsize=200,table,condition,rate):
+def run_single(A_scale,b_scale,batchsize,table,condition,rate):#A,b is scale
     plt.figure()
     epochs = 0
     Xv = []; yv = []
     all_loss = []
     all_step = []
+    flag = 1
     for X,y,Xt,yt in slice_rand(batchsize,table,condition):
+        if flag:
+            flag = 0
+            l = len(X[0])
+            A = np.random.rand(l)*A_scale
+            b = random.random()*b_scale
         Xv.append(Xt); yv.append(yt);epochs+=1
         l_train,A,b,all_loss,all_step = train(X, y,A,b,all_loss,all_step,rate)
 
@@ -130,22 +136,27 @@ def run(A,b,batchsize=200,table,condition,rate):
     plt.close('all') 
     return A, b, l_train, l_val
 
-def run_all(A,b,table,condition,rate):
+def run_all(A_scale,b_scale,batchsize,table,condition,rate):
     plt.figure()
-    epochs = 0
+    epochs = 0;flag = 1
     Xv = [];yv = []
     all_loss = []
     all_step = []
     for data,label in slice_all(table):
+        if flag:
+            flag = 0
+            l = len(X[0])
+            A = np.random.rand(l)*A_scale
+            b = random.random()*b_scale
         if label == 'train':
             epochs+=1
-            X = data[]####
-            y = data[-1]
+            X = data[:,:-1]####
+            y = data[:,-1]
             l_train,A,b,all_loss,all_step = train(X, y,A,b,all_loss,all_step,rate)
 
         elif label == 'valid':
-            Xv.append(data[])####
-            yv.append(data[-1])
+            Xv.append(data[:,:-1])####
+            yv.append(data[:,-1])
     l_val = validate(Xv, yv, A, b)
     logging.info('epoch:' + str(n) + ' ,train_loss:' + str(l_train) + ' ,val_loss:' + str(l_val)
     plt.xlabel("step")

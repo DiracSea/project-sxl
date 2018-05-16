@@ -24,7 +24,7 @@ class conn_db(object):
                     break
 
         except ProgrammingError:
-            print "Tried to read a cursor after it was already closed"
+            print("Tried to read a cursor after it was already closed")
         finally:
             cursor.close();conn.close()
         #values = cursor.fetchall()#value is a tuple type:(str,str,datatime.datetime,int,int)
@@ -67,7 +67,7 @@ class conn_block(conn_db):#yield block
                         flag1 = 0
                 
         except ProgrammingError:
-            print "Tried to read a cursor after it was already closed"
+            print("Tried to read a cursor after it was already closed")
         finally:
             cursor.close();conn.close()
 
