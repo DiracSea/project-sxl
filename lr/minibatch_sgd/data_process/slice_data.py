@@ -1,4 +1,4 @@
-from read_data import read_all_block,read_rand_data,read_single_block
+from .read_data import read_all_block,read_rand_data,read_single_block
 
 def select_func(condition):
     try:
@@ -11,14 +11,23 @@ def select_func(condition):
 
 #split data into training and validation set
 
-def slice_rand(batchsize, table, condition):
+def slice_single(batchsize, table, condition):
     for T, V in select_func(condition)(batchsize, table):
         length = len(T[1])
-        X = T[:,:-1]####
+
+        X = T[:,:-1]
+        X[:,-1] = X[:,-1]/1000
+        y = T[:,-1]/1000
+        Xt = V[:,:-1]
+        Xt[:,-1] = Xt[:,-1]/1000
+        yt = V[:,-1]/1000
+        '''
+        X = T[:,:-1]
         y = T[:,-1]
         Xt = V[:,:-1]
         yt = V[:,-1]
-        yield X,y,Xt,yt
+        '''
+        yield X,y,Xt,yt#modified batch
 
 def slice_all(table):
     for data, label in read_all_block(table):

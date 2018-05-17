@@ -1,6 +1,7 @@
 import MySQLdb
-#import MySQLdb.cursors as cursors
+import numpy as np
 
+global cur;global conn
 class conn_db(object):
     def __init__(self,db,table,host,port,user,psw):
         self.host = host
@@ -13,20 +14,24 @@ class conn_db(object):
     def export(self):
         try:
             conn = MySQLdb.connect(host = self.host,port = self.port,user = self.user,password = self.psw,db = self.db)
-            cursor = conn.cursor()
-            cursor.execute('select * from '+self.table)
+            cur = conn.cursor()
+            #with conn.cursor() as cur:
+            cur.execute('select * from '+self.table)
 
             while 1:
-                row = cursor.fetchone()#use fetchone but not fetchall
+                row = cur.fetchone()#use fetchone but not fetchall
                 if row:
-                    yield row #generate a generator
+                    yield np.array(row) #generate a generator
                 else:
                     break
 
-        except ProgrammingError:
+        except GeneratorExit:
             print("Tried to read a cursor after it was already closed")
         finally:
-            cursor.close();conn.close()
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
         #values = cursor.fetchall()#value is a tuple type:(str,str,datatime.datetime,int,int)
         #l=list(zip(*values))#tuple2zip2list
         #return l
@@ -40,36 +45,42 @@ class conn_rand(conn_db):#yield row
 #2
 class conn_block(conn_db):#yield block
     def __init__(self,db,table,host,port,user,psw):
-        super(conn_single_block,self).__init__(db,table,host,port,user,psw)
+        super(conn_block,self).__init__(db,table,host,port,user,psw)
 
     def export(self):
         try:
             conn = MySQLdb.connect(host = self.host,port = self.port,user = self.user,password = self.psw,db = self.db)
-            cursor = conn.cursor()
-            cursor.execute('select * from '+self.table)
-            flag1 = 1
-            label = 1
-            row = ()
+            cur = conn.cursor()
+            cur.execute('select * from '+self.table)
+            flag1 = 1;flag3 = 0;label = 1;row = ()
             while flag1:
                 block = []
                 flag2 = 1
-                block.append(row)
+                if flag3:
+                    flag3 = 0
+                    block.append(row.tolist())
                 while flag2:
-                    row = cursor.fetchone()#use fetchone but not fetchall
+                    row = cur.fetchone()#use fetchone but not fetchall
+
                     if row:
-                        if label != row[0]:
-                            flag2 = 0
-                            label = row[0]
+                        row = np.array(row)
+                        if label != int(row[0]):
+                            flag2 = 0;flag3 = 1
+                            label = int(row[0])
                             yield block#generate block generator
                         else:
-                            block.append(row)
+                            block.append(row.tolist())
                     else:
                         flag1 = 0
+                        flag2 = 0
                 
-        except ProgrammingError:
+        except GeneratorExit:
             print("Tried to read a cursor after it was already closed")
         finally:
-            cursor.close();conn.close()
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
 
 '''
 #Subclass 1
