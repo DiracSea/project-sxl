@@ -2,15 +2,13 @@ import numpy as np
 import random
 from .db import *
 from .tool.combine import first_stack
+from .tool.sperate import split_num
 #all array
 
-def split_num(batchsize):
-    train_num = int(batchsize*7/10+1/2)
-    valid_num = batchsize - train_num
-    return train_num, valid_num
 
-def read_rand_data(batchsize,table):#yield batch  
-    rand = conn_rand('dataBlock',table,'112.74.45.185',3306,'root','opal123456!@#')###
+
+def read_rand_data(batchsize,table,db):#yield batch  
+    rand = conn_rand(db,table,'112.74.45.185',3306,'root','opal123456!@#')###
     counter = 0
     size = 0
     train_num, valid_num = split_num(batchsize)
@@ -31,15 +29,15 @@ def read_rand_data(batchsize,table):#yield batch
         else:
             yield T,V
 
-def del_label(table):
-    block = conn_block('dataBlock',table,'112.74.45.185',3306,'root','opal123456!@#')###
+def del_label(table,db):
+    block = conn_block(db,table,'112.74.45.185',3306,'root','opal123456!@#')###
     for b in block.export():
         a = np.array(b)
         yield a[:,1:]
 
 
-def read_single_block(blank,table):
-    for block in del_label(table):
+def read_single_block(blank,table,db):
+    for block in del_label(table,db):
         if block!= np.array([]):
             batchsize = len(block)
             train_num, valid_num = split_num(batchsize)
@@ -55,8 +53,8 @@ def read_single_block(blank,table):
             yield T,V#batch
 
 
-def read_all_block(table):
-    for block in del_label(table):
+def read_all_block(table,db):
+    for block in del_label(table,db):
         if block!= np.array([]):
             seed = int(random.random()*10)
             if(seed < 7):

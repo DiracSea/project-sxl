@@ -11,8 +11,8 @@ def select_func(condition):
 
 #split data into training and validation set
 
-def slice_single(batchsize, table, condition):
-    for T, V in select_func(condition)(batchsize, table):
+def slice_single(batchsize, table, db, condition):
+    for T, V in select_func(condition)(batchsize, table, db):
         length = len(T[1])
 
         X = T[:,:-1]
@@ -29,6 +29,6 @@ def slice_single(batchsize, table, condition):
         '''
         yield X,y,Xt,yt#modified batch
 
-def slice_all(table):
-    for data, label in read_all_block(table):
+def slice_all(table,db):
+    for data, label in read_all_block(table,db):
         yield data, label

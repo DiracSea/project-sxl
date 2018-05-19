@@ -17,6 +17,9 @@ A=[]
 b=20
 X #global X is array
 '''
+def regular():
+    pass
+
 def dA(y,y_p,X):#negative partial A/gradA, A is vector
     return (y-y_p)*(-X)
 
@@ -42,10 +45,11 @@ def loss_func(A,b,X,y):#loss function
 '''
 
 
-def train(X,y,A,b,rate,all_loss):#X, y is batch
-    loss = 0
+def train(X,y,A,b,rate):#X, y is batch
+
     all_dA = np.zeros(np.shape(A))
     all_db = 0
+    loss = 0
 
     for i in range(len(X)):
         y_p = np.dot(A,X[i]) + b
@@ -54,10 +58,9 @@ def train(X,y,A,b,rate,all_loss):#X, y is batch
         all_db = all_db + db(y[i],y_p)
     
     loss = loss/len(X)
-    all_loss.append(loss)
     A = A - rate*all_dA/len(X)
     b = b - rate*all_db/len(X)
-    return A,b,all_loss
+    return A,b,loss
 
 def validate(Xv,yv,A,b):
     loss = 0
@@ -70,7 +73,7 @@ def validate(Xv,yv,A,b):
     return loss
 
 
-def run_single(A_scale,b_scale,batchsize,table,condition,rate):#A,b is scale
+def run_single(A_scale,b_scale,batchsize,table,db,condition,rate):#A,b is scale
 
     plt.figure()
     epochs = 0
@@ -81,7 +84,7 @@ def run_single(A_scale,b_scale,batchsize,table,condition,rate):#A,b is scale
     A = 0;b = 0;l_train = 0
     Xv = [];yv = np.array([])
 
-    for X,y,Xt,yt in slice_single(batchsize,table,condition):
+    for X,y,Xt,yt in slice_single(batchsize,table,db,condition):
         #if i < 5:
         #    i+=1
             if flag:
@@ -90,9 +93,10 @@ def run_single(A_scale,b_scale,batchsize,table,condition,rate):#A,b is scale
             Xv,flag1 = first_stack(X,Xt,flag1)
             yv = np.append(yv,yt)
             epochs+=1
-            A,b,all_loss = train(X,y,A,b,rate,all_loss)
+            A,b,loss = train(X,y,A,b,rate)
 
             all_step.append(epochs)
+            all_loss.append(loss)
         
 
     l_val = validate(Xv, yv, A, b)
@@ -106,7 +110,7 @@ def run_single(A_scale,b_scale,batchsize,table,condition,rate):#A,b is scale
 
     return A,b,l_train,l_val
 
-def run_all(A_scale,b_scale,batchsize,table,condition,rate):
+def run_all(A_scale,b_scale,batchsize,table,db,condition,rate):
     plt.figure()
 
     epochs = 0
@@ -116,19 +120,23 @@ def run_all(A_scale,b_scale,batchsize,table,condition,rate):
     all_loss = []
     all_step = []
     
-    for data,label in slice_all(table):
+    for data,label in slice_all(table,db):
         if label == 'train':
             epochs+=1
-            X = data[:,:-1]####
-            y = data[:,-1]
+            X = data[:,:-1]
+            X[:,-1] = X[:,-1]/1000
+            y = data[:,-1]/1000
             if flag:
                 A,b,flag = scale(X,A_scale,b_scale,flag)
-            A,b,all_loss = train(X,y,A,b,rate,all_loss)
+            A,b,loss = train(X,y,A,b,rate)
             all_step.append(epochs)
+            all_loss.append(loss)
 
         elif label == 'valid':
-            Xv,flag1 = first_stack(Xv,data[:,:-1],flag1)
-            yv = np.append(yv,data[:,-1])
+            Xt = data[:,:-1]
+            Xt[:,-1] = Xt[:,-1]/1000
+            Xv,flag1 = first_stack(Xv,Xt,flag1)
+            yv = np.append(yv,data[:,-1]/1000)
 
     l_val = validate(Xv, yv, A, b)
     l_train = sum(all_loss)/epochs

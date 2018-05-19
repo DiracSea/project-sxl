@@ -9,20 +9,7 @@ def first_stack(X1,X2,flag):
     return X1,flag
 
 
-def shuffle_data(X,y):#randomize X and y,testing
-    seed = random.random()
-    random.seed(seed)
-    random.shuffle(X.tolist())
-    random.seed(seed)
-    random.shuffle(y.tolist())
-    X = np.array(X)
-    y = np.array(y)
-    return [X,y]
 
-def shuffle_index(inputs):
-    indices = np.arange(inputs.shape[0])
-    np.randpm.shuffle(indices)
-    return indices
 ''' 
 def regular(X,y):
     X_max = X_array.max()
