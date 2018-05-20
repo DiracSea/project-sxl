@@ -19,14 +19,14 @@ def rand_select_batch(T,batchsize):
     np.random.shuffle(T)
     return T[:batchsize,:]
 
-def run(X_num,Y_num,pertime,A_scale,b_scale,batchsize,epochs,rate):
+def run(X_num,Y_num,pertime,A_scale,b_scale,batchsize,epochs,rate,name):
 
     flag = 1; all_step = []; train_loss = []; valid_loss = []
 
-    T,V = use_data(X_num,Y_num,pertime)
+    T,V = use_data(X_num,Y_num,pertime,name)
     my_path = os.path.abspath(os.path.dirname(__file__))
-    log_name = 'log'+'_X'+str(X_num)+'_Y'+str(Y_num)+'_pertime'+str(pertime)+'.txt'
-    path = os.path.join(my_path, "log\\"+log_name)
+    log_name = '_'+name+'_X'+str(X_num)+'_Y'+str(Y_num)+'_pertime'+str(pertime)
+    path = os.path.join(my_path, "log\\"+'log'+log_name+'.txt')
     path1 = os.path.join(my_path, "plot\\")
     with open(path,'a+') as f:
         f.write('current_time:'+current_time()+'\n')
@@ -49,14 +49,14 @@ def run(X_num,Y_num,pertime,A_scale,b_scale,batchsize,epochs,rate):
         valid_loss.append(loss_v)
 
         with open(path,'a') as f:
-            f.write('epochs:'+str(i)+',train_loss:'+str(train_loss)+',validation_loss:'+str(valid_loss)+'\n')
+            f.write('epochs:'+str(i)+',train_loss:'+str(loss_t)+',validation_loss:'+str(loss_v)+'\n')
 
     plt.plot(all_step,train_loss,color = 'blue',label = 'train')
     plt.plot(all_step,valid_loss,color = 'red', label = 'validation')
     plt.xlabel('step')
     plt.ylabel('loss')
     plt.legend()
-    plt.savefig(path1+'plot_X'+str(X_num)+'_Y'+str(Y_num)+'_time'+str(pertime)+'.png')####
+    plt.savefig(path1+'plot'+log_name+'.png')####
 
     l_train = sum(train_loss)/epochs
     l_val = loss_v

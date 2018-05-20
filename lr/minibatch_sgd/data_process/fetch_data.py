@@ -23,8 +23,8 @@ def all_norm(nlist):
     new_nlist_T = map(list,zip(*new_nlist))
     return list(new_nlist_T)
 
-def use_data(X_num,Y_num,pertime):
-    table = gen_data(X_num,Y_num,pretime)
+def use_data(X_num,Y_num,pertime,name):
+    table = gen_data(X_num,Y_num,pretime,name)
     #table = conn_all('dataBlock','`1560-5X-1Y-Y`','112.74.45.185',3306,'root','opal123456!@#').export()
     l = len(table)
     train_num,valid_num = split_num(l)
