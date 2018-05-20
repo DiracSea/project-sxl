@@ -25,11 +25,12 @@ def run(X_num,Y_num,pertime,A_scale,b_scale,batchsize,epochs,rate,name):
 
     T,V = use_data(X_num,Y_num,pertime,name)
     my_path = os.path.abspath(os.path.dirname(__file__))
-    log_name = '_'+name+'_X'+str(X_num)+'_Y'+str(Y_num)+'_pertime'+str(pertime)
+    log_name = '_'+name+'_batch'+str(batchsize)+'_epochs'+str(epochs)+'_rate'+str(rate)+'_X'+str(X_num)+'_Y'+str(Y_num)+'_T'+str(pertime)
     path = os.path.join(my_path, "log\\"+'log'+log_name+'.txt')
     path1 = os.path.join(my_path, "plot\\")
     with open(path,'a+') as f:
         f.write('current_time:'+current_time()+'\n')
+        f.write('batchsize:'+str(batchsize)+',epochs:'+str(epochs)+',rate:'+str(rate))
         f.write('X:'+str(X_num)+',Y:'+str(Y_num)+',per_time:'+str(pertime)+'\n')
         
     plt.figure()
